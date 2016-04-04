@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en-SG">
+<head>
+	{% block title %}<title>Hint Number</title>{% endblock %}
+	<link href="/static/glike.css" rel="stylesheet" type="text/css" /> 
+</head>
+{% block content %}
+<p>Your Guess: {{ stguess }}</p>
+{% endblock %}
+<p>{{ hint }}</p>
+<form method="post" action="/">
+<p>Enter Guess: <input type="text" name="guess"/></p>
+<p><input type="submit"></p>
+</form>
+</html>
