@@ -15,57 +15,45 @@
 # limitations under the License.
 #
 import webapp2
-import os
-import logging
 import jinja2
-
+import os
 from google.appengine.ext import db
 
-class Number(db.Model):
-    num = db.IntegerProperty(default = 0)
+# A Model for a User
+class User(db.Model):
+    account = db.StringProperty()
+    password = db.StringProperty()
+    name = db.StringProperty()
 
 class MainHandler(webapp2.RequestHandler):
-    def get(self):   
+    def get(self):
         JINJA_ENVIRONMENT = jinja2.Environment(
             loader=jinja2.FileSystemLoader(os.path.join(
                 os.path.dirname(__file__),'templates')),
             autoescape=True)
-        template = JINJA_ENVIRONMENT.get_template('index.html')
-        template_values = {
-            'hint': 'Please make a guess'
-        }
-        self.response.write(template.render(template_values))
+        template = JINJA_ENVIRONMENT.get_template('applyscreen.html')
+        self.response.write(template.render())
 
     def post(self):
-        stguess = self.request.get('guess')
-        try:
-            guess = int(stguess)
-        except:
-            guess = -1
-        answer = 42
-        if guess == answer:
-            msg = 'Congratulations'
-        elif guess < 0 :
-            msg = 'Please provide a number'
-        elif guess < answer:
-            msg = 'Your guess is too low'
-        else:
-            msg = 'Your guess is too high'
+        rname = self.request.get('name')
+        raccount = self.request.get('account')
+        rpassword = self.request.get('password')
+        self.user = User(account = raccount, password = rpassword, name = rname)
+        self.user.put()
+        self.response.write('successfully submitted')
+
+class ShowHandler(webapp2.RequestHandler):
+    def get(self):
         JINJA_ENVIRONMENT = jinja2.Environment(
             loader=jinja2.FileSystemLoader(os.path.join(
                 os.path.dirname(__file__),'templates')),
             autoescape=True)
-        template = JINJA_ENVIRONMENT.get_template('guess.html')
-        template_values = {
-            'stguess': stguess,
-            'hint': msg
-        }
-        self.response.write(template.render(template_values))
-        self.number = Number(num = int(stguess))
-        self.number.put()
-
+        template = JINJA_ENVIRONMENT.get_template('show.html')
+        user = db.Query(User)
+        user_dir = {'greetings': user}                
+        self.response.write(template.render(user_dir))
+        
 app = webapp2.WSGIApplication([
-    ('/', MainHandler)
-	], debug=True)
-
-
+    webapp2.Route(r'/', MainHandler),
+    webapp2.Route(r'/show', ShowHandler)
+], debug=True)
